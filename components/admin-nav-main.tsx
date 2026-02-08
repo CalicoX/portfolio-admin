@@ -1,5 +1,6 @@
 "use client"
 
+import * as React from "react"
 import { type LucideIcon } from "lucide-react"
 
 import {
@@ -12,6 +13,7 @@ import {
 
 export function AdminNavMain({
   items,
+  activePage,
 }: {
   items: {
     title: string
@@ -19,21 +21,29 @@ export function AdminNavMain({
     icon?: LucideIcon
     id: string
   }[]
+  activePage?: string
 }) {
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
         <SidebarMenu>
-          {items.map((item) => (
-            <SidebarMenuItem key={item.title}>
-              <SidebarMenuButton tooltip={item.title} asChild>
-                <a href={item.url}>
-                  {item.icon && <item.icon />}
-                  <span>{item.title}</span>
-                </a>
-              </SidebarMenuButton>
-            </SidebarMenuItem>
-          ))}
+          {items.map((item) => {
+            const isActive = activePage === item.id || (!activePage && item.id === 'index')
+            return (
+              <SidebarMenuItem key={item.title}>
+                <SidebarMenuButton
+                  tooltip={item.title}
+                  asChild
+                  isActive={isActive}
+                >
+                  <a href={item.url}>
+                    {item.icon && <item.icon />}
+                    <span>{item.title}</span>
+                  </a>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            )
+          })}
         </SidebarMenu>
       </SidebarGroupContent>
     </SidebarGroup>

@@ -86,6 +86,19 @@ export function AdminSidebar({
     avatar: avatar || data.user.avatar,
   }
 
+  // Get current active page from URL hash
+  const [currentPage, setCurrentPage] = React.useState(
+    () => window.location.hash.replace('#', '') || 'index'
+  )
+
+  React.useEffect(() => {
+    const handleHashChange = () => {
+      setCurrentPage(window.location.hash.replace('#', '') || 'index')
+    }
+    window.addEventListener('hashchange', handleHashChange)
+    return () => window.removeEventListener('hashchange', handleHashChange)
+  }, [])
+
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
@@ -109,7 +122,7 @@ export function AdminSidebar({
         </SidebarMenu>
       </SidebarHeader>
       <SidebarContent>
-        <AdminNavMain items={data.navMain} />
+        <AdminNavMain items={data.navMain} activePage={currentPage} />
       </SidebarContent>
       <SidebarFooter>
         <SidebarMenu>

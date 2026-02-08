@@ -14,7 +14,7 @@
   --popover: 0 0% 100%;
   --popover-foreground: 240 10% 3.9%;
 
-  --primary: 0 0% 0%;
+  --primary: 240 5.9% 10%;
   --primary-foreground: 0 0% 98%;
 
   --secondary: 240 4.8% 95.9%;
@@ -31,7 +31,7 @@
 
   --border: 240 5.9% 90%;
   --input: 240 5.9% 90%;
-  --ring: 217 91% 60%;
+  --ring: 240 10% 3.9%;
 
   --radius: 0.75rem;
 }
@@ -40,12 +40,12 @@
 :root {
   --sidebar: hsl(0 0% 98%);
   --sidebar-foreground: hsl(240 5.3% 26.1%);
-  --sidebar-primary: hsl(0 0% 0%);
+  --sidebar-primary: hsl(240 5.9% 10%);
   --sidebar-primary-foreground: hsl(0 0% 98%);
   --sidebar-accent: hsl(240 4.8% 95.9%);
   --sidebar-accent-foreground: hsl(240 5.9% 10%);
   --sidebar-border: hsl(220 13% 91%);
-  --sidebar-ring: hsl(0 0% 0%);
+  --sidebar-ring: hsl(240 5.9% 10%);
 }
 
 

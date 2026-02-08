@@ -1,6 +1,6 @@
 # Portfolio Admin 项目记忆
 
-*最后更新: 2026-02-08 13:49*
+*最后更新: 2026-02-08 13:53*
 
 ## 项目概述
 
@@ -115,8 +115,5 @@ npm run preview  # 预览构建
 
 | 时间 | 分支 | 提交 | 说明 |
 |------|------|------|------|
-| 2026-02-08 13:49 | `Home-Macmini` | `1c3133c` | feat: 设置自动更新 memory.md 的 git hooks |
-| 2026-02-08 13:48 | `Home-Macmini` | `fe163cf` | feat: 设置自动更新 memory.md 的 git hooks |
-| 2026-02-08 13:48 | `Home-Macmini` | `18bef09` | feat: 设置自动更新 memory.md 的 git hooks |
-| 2026-02-08 13:47 | `Home-Macmini` | `bbdecdf` | feat: 设置自动更新 memory.md 的 git hooks |
-| 2026-02-08 13:45 | `Home-Macmini` | `1ff598a` | feat: add memory.md and auto-update hook |
+| 2026-02-08 13:53 | `Home-Macmini` | `4a5d1ea` | chore: 修复 memory.md 重复记录 |
+| 2026-02-08 13:47 | `Home-Macmini` | `fe163cf` | feat: 设置自动更新 memory.md 的 git hooks |

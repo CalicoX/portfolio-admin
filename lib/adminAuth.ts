@@ -28,8 +28,8 @@ export async function validateAuthToken(token: string, passwordHash: string): Pr
     // Check timestamp is valid number
     if (isNaN(timestamp)) return false;
 
-    // Check token is not too old (24 hours max)
-    const maxAge = 24 * 60 * 60 * 1000;
+    // Check token is not too old (15 minutes max)
+    const maxAge = 15 * 60 * 1000;
     if (Date.now() - timestamp > maxAge) return false;
 
     // Check token is not from the future (with 1 minute tolerance)
@@ -103,6 +103,6 @@ export function hasAuthToken(): boolean {
     const timestamp = parseInt(parts[0], 10);
     if (isNaN(timestamp)) return false;
 
-    const maxAge = 24 * 60 * 60 * 1000;
+    const maxAge = 15 * 60 * 1000;
     return Date.now() - timestamp <= maxAge;
 }

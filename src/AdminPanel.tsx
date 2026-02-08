@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LogOut, Plus, Trash2, Edit2, Save, X, Upload, Loader2, RefreshCw, Image as ImageIcon, User, Lock, AlertTriangle, Key } from 'lucide-react';
+import { LogOut, Plus, Trash2, Edit2, Save, Upload, Loader2, RefreshCw, Image as ImageIcon, User, Lock, AlertTriangle, Key, X, Shield, Settings, Sparkles, LayoutDashboard } from 'lucide-react';
 import {
     getPhotosAdmin,
     createPhoto,
@@ -22,17 +22,21 @@ import { generateSetupUri } from '../lib/totp';
 import { Button } from "../components/ui/button";
 import { Input } from "../components/ui/input";
 import { Label } from "../components/ui/label";
+import { Textarea } from "../components/ui/textarea";
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from "../components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs";
+import { Badge } from "../components/ui/badge";
+import { Separator } from "../components/ui/separator";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "../components/ui/select";
 
-// Content model definitions
+// Content model definitions with icons
 const CONTENT_MODELS = [
-    { id: 'index', name: 'Index', description: 'Homepage settings' },
-    { id: 'navigation', name: 'Navigation', description: 'Nav menu items' },
-    { id: 'photo', name: 'Photos', description: 'Photo gallery' },
-    { id: 'portfolio', name: 'Portfolio', description: 'UI/Graphic projects' },
-    { id: 'stat', name: 'Stats', description: 'Statistics display' },
-    { id: 'settings', name: 'Settings', description: 'Admin configuration' },
+    { id: 'index', name: 'Index', description: 'Homepage settings', icon: LayoutDashboard },
+    { id: 'navigation', name: 'Navigation', description: 'Nav menu items', icon: Settings },
+    { id: 'photo', name: 'Photos', description: 'Photo gallery', icon: ImageIcon },
+    { id: 'portfolio', name: 'Portfolio', description: 'UI/Graphic projects', icon: Sparkles },
+    { id: 'stat', name: 'Stats', description: 'Statistics display', icon: Settings },
+    { id: 'settings', name: 'Settings', description: 'Admin configuration', icon: Shield },
 ];
 
 interface EntryItem {
@@ -166,7 +170,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
         }
     };
 
-    const handleTokenSubmit = (e: React.FormEvent) => {
+    const handleTokenSubmit = (e: React.SyntheticEvent) => {
         e.preventDefault();
         if (tokenInput.trim()) {
             setManagementToken(tokenInput.trim());
@@ -188,6 +192,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
     const handleLogout = () => {
         clearAuthToken();
         onLogout();
+        // Redirect to portfolio website
+        window.location.href = 'https://calicox.github.io/portfolio-website';
     };
 
     const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>, fieldName: string = 'imageAssetId') => {
@@ -333,90 +339,100 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
     const renderIndexForm = () => {
         if (!indexData && !loading) {
             return (
-                <div className="text-center py-12 text-muted-foreground">
-                    No Index entry found. Create one in Contentful first.
+                <div className="flex flex-col items-center justify-center py-20 px-4">
+                    <div className="w-20 h-20 rounded-2xl bg-muted/50 border border-border flex items-center justify-center mb-4">
+                        <User size={36} className="text-muted-foreground/50" />
+                    </div>
+                    <h3 className="text-lg font-semibold mb-2">No Profile Found</h3>
+                    <p className="text-sm text-muted-foreground text-center">Create an Index entry in Contentful first.</p>
                 </div>
             );
         }
 
         return (
-            <Card className="border-border/50 bg-card/60">
-                <CardHeader>
+            <Card className="border-border/50 shadow-lg overflow-hidden">
+                <CardHeader className="border-b border-border/50 bg-muted/30">
                     <div className="flex items-center gap-4">
-                        <div className="w-16 h-16 rounded-full bg-secondary flex-shrink-0 flex items-center justify-center overflow-hidden border border-input">
-                            {indexData?.profileImageUrl ? (
-                                <img
-                                    src={indexData.profileImageUrl}
-                                    alt="Profile"
-                                    className="w-full h-full object-cover"
-                                />
-                            ) : (
-                                <User size={24} className="text-muted-foreground" />
-                            )}
+                        <div className="relative">
+                            <div className="w-20 h-20 rounded-2xl bg-gradient-to-br from-primary/20 to-primary/5 flex-shrink-0 flex items-center justify-center overflow-hidden border border-border shadow-lg">
+                                {indexData?.profileImageUrl ? (
+                                    <img
+                                        src={indexData.profileImageUrl}
+                                        alt="Profile"
+                                        className="w-full h-full object-cover"
+                                    />
+                                ) : (
+                                    <User size={32} className="text-primary/40" />
+                                )}
+                            </div>
+                            <div className="absolute -bottom-1 -right-1 w-6 h-6 bg-primary rounded-full flex items-center justify-center">
+                                <Sparkles size={12} className="text-primary-foreground" />
+                            </div>
                         </div>
                         <div>
-                            {/* Static Title to prevent layout breakage from long content */}
-                            <CardTitle>Profile Settings</CardTitle>
-                            <CardDescription>Manage your homepage intro and personal details.</CardDescription>
+                            <CardTitle className="text-xl">Profile Settings</CardTitle>
+                            <CardDescription>Manage your homepage intro and personal details</CardDescription>
                         </div>
                     </div>
                 </CardHeader>
-                <CardContent className="grid gap-6">
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <div className="space-y-2">
-                            <Label>Hero Title</Label>
+                <CardContent className="p-6 grid gap-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                        <div className="space-y-2.5">
+                            <Label className="text-sm font-medium">Hero Title</Label>
                             <Input
                                 value={formData.heroTitle || ''}
                                 onChange={(e) => setFormData({ ...formData, heroTitle: e.target.value })}
                                 placeholder="Making Things"
+                                className="h-10 bg-muted/50 border-muted focus:border-primary/50"
                             />
                         </div>
-                        <div className="space-y-2">
-                            <Label>Hero Subtitle</Label>
+                        <div className="space-y-2.5">
+                            <Label className="text-sm font-medium">Hero Subtitle</Label>
                             <Input
                                 value={formData.heroSubtitle || ''}
                                 onChange={(e) => setFormData({ ...formData, heroSubtitle: e.target.value })}
                                 placeholder="Better"
+                                className="h-10 bg-muted/50 border-muted focus:border-primary/50"
                             />
                         </div>
-                        <div className="space-y-2">
-                            <Label>Name</Label>
+                        <div className="space-y-2.5">
+                            <Label className="text-sm font-medium">Name</Label>
                             <Input
                                 value={formData.name || ''}
                                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                                 placeholder="Your Name"
+                                className="h-10 bg-muted/50 border-muted focus:border-primary/50"
                             />
                         </div>
-                        <div className="space-y-2">
-                            <Label>CV Link</Label>
+                        <div className="space-y-2.5">
+                            <Label className="text-sm font-medium">CV Link</Label>
                             <Input
                                 value={formData.cvLink || ''}
                                 onChange={(e) => setFormData({ ...formData, cvLink: e.target.value })}
                                 placeholder="https://..."
+                                className="h-10 bg-muted/50 border-muted focus:border-primary/50"
                             />
                         </div>
-                        <div className="md:col-span-2 space-y-2">
-                            <Label>Description</Label>
-                            <textarea
+                        <div className="md:col-span-2 space-y-2.5">
+                            <Label className="text-sm font-medium">Description</Label>
+                            <Textarea
                                 value={formData.description || ''}
                                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
                                 rows={4}
-                                className="flex min-h-[100px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
+                                className="bg-muted/50 border-muted focus:border-primary/50 resize-none"
                                 placeholder="A short bio..."
                             />
                         </div>
-                        <div className="md:col-span-2 space-y-2">
-                            <Label>Profile Image</Label>
-                            <div className="flex items-center gap-4">
-                                <Label
-                                    className="flex items-center gap-2 cursor-pointer border border-input bg-secondary/50 hover:bg-secondary/80 h-10 px-4 rounded-md text-sm font-medium transition-colors"
-                                >
+                        <div className="md:col-span-2 space-y-2.5">
+                            <Label className="text-sm font-medium">Profile Image</Label>
+                            <div className="flex items-center gap-3">
+                                <label className="inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 cursor-pointer">
                                     {uploadingImage ? (
-                                        <Loader2 size={16} className="animate-spin" />
+                                        <Loader2 size={16} className="mr-2 animate-spin" />
                                     ) : (
-                                        <Upload size={16} />
+                                        <Upload size={16} className="mr-2" />
                                     )}
-                                    <span>{uploadingImage ? 'Uploading...' : 'Upload Image'}</span>
+                                    {uploadingImage ? 'Uploading...' : 'Upload Image'}
                                     <Input
                                         type="file"
                                         accept="image/*"
@@ -424,22 +440,22 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
                                         className="hidden"
                                         disabled={uploadingImage}
                                     />
-                                </Label>
+                                </label>
                                 {formData.profileImageAssetId && (
-                                    <span className="flex items-center gap-2 text-sm text-green-500">
-                                        <ImageIcon size={16} />
+                                    <Badge variant="secondary" className="gap-1.5">
+                                        <ImageIcon size={12} />
                                         Image uploaded
-                                    </span>
+                                    </Badge>
                                 )}
                             </div>
                         </div>
                     </div>
                 </CardContent>
-                <CardFooter className="bg-muted/30 border-t border-border/50 p-6 flex justify-end">
+                <CardFooter className="flex justify-end border-t border-border/50 bg-muted/30 p-4">
                     <Button
                         onClick={handleUpdate}
                         disabled={saving}
-                        className="w-full sm:w-auto min-w-[120px]"
+                        className="shadow-lg shadow-primary/25"
                     >
                         {saving ? <Loader2 size={16} className="mr-2 animate-spin" /> : <Save size={16} className="mr-2" />}
                         {saving ? 'Saving...' : 'Save Changes'}
@@ -452,56 +468,58 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
     // Render Photo form
     const renderPhotoForm = () => {
         return (
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="space-y-2">
-                    <Label>Title *</Label>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
+                <div className="space-y-2.5">
+                    <Label className="text-sm font-medium">Title *</Label>
                     <Input
                         value={formData.title || ''}
                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                         placeholder="Photo title"
+                        className="h-10 bg-muted/50 border-muted focus:border-primary/50"
                     />
                 </div>
-                <div className="space-y-2">
-                    <Label>Location</Label>
+                <div className="space-y-2.5">
+                    <Label className="text-sm font-medium">Location</Label>
                     <Input
                         value={formData.location || ''}
                         onChange={(e) => setFormData({ ...formData, location: e.target.value })}
                         placeholder="Tokyo, Japan"
+                        className="h-10 bg-muted/50 border-muted focus:border-primary/50"
                     />
                 </div>
-                <div className="space-y-2">
-                    <Label>Date</Label>
+                <div className="space-y-2.5">
+                    <Label className="text-sm font-medium">Date</Label>
                     <Input
                         type="date"
                         value={formData.date || ''}
                         onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                        className="h-10 bg-muted/50 border-muted focus:border-primary/50"
                     />
                 </div>
-                <div className="space-y-2">
-                    <Label>Aspect Ratio</Label>
-                    <select
-                        value={formData.aspectRatio || 'aspect-[3/4]'}
-                        onChange={(e) => setFormData({ ...formData, aspectRatio: e.target.value })}
-                        className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm ring-offset-background focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:cursor-not-allowed disabled:opacity-50"
-                    >
-                        <option value="aspect-[3/4]">3:4 (Portrait)</option>
-                        <option value="aspect-[4/3]">4:3 (Landscape)</option>
-                        <option value="aspect-square">1:1 (Square)</option>
-                        <option value="aspect-[16/9]">16:9 (Wide)</option>
-                    </select>
+                <div className="space-y-2.5">
+                    <Label className="text-sm font-medium">Aspect Ratio</Label>
+                    <Select value={formData.aspectRatio || 'aspect-[3/4]'} onValueChange={(value) => setFormData({ ...formData, aspectRatio: value })}>
+                        <SelectTrigger className="h-10 bg-muted/50 border-muted focus:border-primary/50">
+                            <SelectValue placeholder="Select ratio" />
+                        </SelectTrigger>
+                        <SelectContent>
+                            <SelectItem value="aspect-[3/4]">3:4 (Portrait)</SelectItem>
+                            <SelectItem value="aspect-[4/3]">4:3 (Landscape)</SelectItem>
+                            <SelectItem value="aspect-square">1:1 (Square)</SelectItem>
+                            <SelectItem value="aspect-[16/9]">16:9 (Wide)</SelectItem>
+                        </SelectContent>
+                    </Select>
                 </div>
-                <div className="md:col-span-2 space-y-2">
-                    <Label>Image</Label>
-                    <div className="flex items-center gap-4">
-                        <Label
-                            className="flex items-center gap-2 cursor-pointer border border-input bg-secondary/50 hover:bg-secondary/80 h-10 px-4 rounded-md text-sm font-medium transition-colors"
-                        >
+                <div className="md:col-span-2 space-y-2.5">
+                    <Label className="text-sm font-medium">Image</Label>
+                    <div className="flex items-center gap-3">
+                        <label className="inline-flex items-center justify-center whitespace-nowrap rounded-lg text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 disabled:pointer-events-none disabled:opacity-50 border border-input bg-background hover:bg-accent hover:text-accent-foreground h-10 px-4 py-2 cursor-pointer">
                             {uploadingImage ? (
-                                <Loader2 size={16} className="animate-spin" />
+                                <Loader2 size={16} className="mr-2 animate-spin" />
                             ) : (
-                                <Upload size={16} />
+                                <Upload size={16} className="mr-2" />
                             )}
-                            <span>{uploadingImage ? 'Uploading...' : 'Upload Image'}</span>
+                            {uploadingImage ? 'Uploading...' : 'Upload Image'}
                             <Input
                                 type="file"
                                 accept="image/*"
@@ -509,12 +527,12 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
                                 className="hidden"
                                 disabled={uploadingImage}
                             />
-                        </Label>
+                        </label>
                         {formData.imageAssetId && (
-                            <span className="flex items-center gap-2 text-sm text-green-500">
-                                <ImageIcon size={16} />
+                            <Badge variant="secondary" className="gap-1.5">
+                                <ImageIcon size={12} />
                                 Image uploaded
-                            </span>
+                            </Badge>
                         )}
                     </div>
                 </div>
@@ -525,44 +543,68 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
     // Render Settings form
     const renderSettingsForm = () => {
         return (
-            <Card className="border-border/50 bg-card/60">
-                <CardHeader>
-                    <CardTitle>Two-Factor Authentication</CardTitle>
-                    <CardDescription>
-                        Add an extra layer of security using Microsoft Authenticator or Google Authenticator.
-                    </CardDescription>
+            <Card className="border-border/50 shadow-lg overflow-hidden">
+                <CardHeader className="border-b border-border/50 bg-muted/30">
+                    <div className="flex items-center gap-3">
+                        <div className="w-12 h-12 rounded-xl bg-primary/10 flex items-center justify-center">
+                            <Shield className="w-6 h-6 text-primary" />
+                        </div>
+                        <div>
+                            <CardTitle>Two-Factor Authentication</CardTitle>
+                            <CardDescription>Add an extra layer of security to your account</CardDescription>
+                        </div>
+                    </div>
                 </CardHeader>
-                <CardContent className="space-y-6">
+                <CardContent className="p-6 space-y-6">
                     {!qrCodeUrl ? (
-                        <div className="flex flex-col gap-4">
-                            <Button onClick={handleGenerate2FA} className="w-fit">
+                        <div className="flex flex-col items-center justify-center py-8">
+                            <div className="w-16 h-16 rounded-2xl bg-primary/10 flex items-center justify-center mb-4">
+                                <Lock size={32} className="text-primary" />
+                            </div>
+                            <p className="text-sm text-muted-foreground mb-6 text-center max-w-sm">
+                                Protect your admin account with two-factor authentication using an authenticator app
+                            </p>
+                            <Button onClick={handleGenerate2FA} size="lg" className="shadow-lg shadow-primary/25">
                                 <Lock className="mr-2 h-4 w-4" />
                                 Setup 2FA
                             </Button>
                         </div>
                     ) : (
-                        <div className="space-y-6 animate-in fade-in slide-in-from-top-4 duration-300">
-                            <div className="bg-white p-4 rounded-lg w-fit">
-                                <img src={qrCodeUrl} alt="2FA QR Code" className="w-48 h-48" />
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label>Secret Key (Add to .env)</Label>
-                                <div className="flex items-center gap-2">
-                                    <code className="bg-muted px-3 py-2 rounded text-primary font-mono border select-all block w-full">
-                                        VITE_TOTP_SECRET={newSecret}
-                                    </code>
+                        <div className="space-y-6 animate-slide-up-fade">
+                            <div className="flex justify-center">
+                                <div className="bg-white p-6 rounded-2xl shadow-lg">
+                                    <img src={qrCodeUrl} alt="2FA QR Code" className="w-56 h-56" />
                                 </div>
                             </div>
 
-                            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-lg p-4">
-                                <h4 className="font-semibold text-yellow-500 mb-1 flex items-center gap-2">
-                                    <AlertTriangle size={18} /> Important
+                            <div className="space-y-2">
+                                <Label className="text-sm font-medium">Secret Key</Label>
+                                <div className="flex items-center gap-2">
+                                    <code className="flex-1 bg-muted border border-border px-4 py-3 rounded-lg text-primary font-mono text-sm select-all">
+                                        VITE_TOTP_SECRET={newSecret}
+                                    </code>
+                                </div>
+                                <p className="text-xs text-muted-foreground">Add this to your .env file</p>
+                            </div>
+
+                            <div className="bg-yellow-500/10 border border-yellow-500/20 rounded-xl p-4">
+                                <h4 className="font-semibold text-yellow-500 mb-3 flex items-center gap-2">
+                                    <AlertTriangle size={18} />
+                                    Setup Instructions
                                 </h4>
-                                <ul className="text-sm text-yellow-500/80 space-y-1 list-disc list-inside">
-                                    <li>Scan the QR code with <strong>Microsoft Authenticator</strong>.</li>
-                                    <li>Copy the line above and add/update it in your local <code>.env</code> file.</li>
-                                    <li>Restart your development server for changes to take effect.</li>
+                                <ul className="text-sm text-yellow-500/80 space-y-2">
+                                    <li className="flex items-start gap-2">
+                                        <span className="font-bold">1.</span>
+                                        <span>Scan the QR code with <strong>Microsoft Authenticator</strong> or similar app</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <span className="font-bold">2.</span>
+                                        <span>Copy the secret key above and add it to your <code>.env</code> file</span>
+                                    </li>
+                                    <li className="flex items-start gap-2">
+                                        <span className="font-bold">3.</span>
+                                        <span>Restart your development server for changes to take effect</span>
+                                    </li>
                                 </ul>
                             </div>
                         </div>
@@ -573,68 +615,94 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
     };
 
     const renderComingSoon = () => (
-        <Card className="border-border/50 bg-card/60">
-            <CardContent className="flex flex-col items-center justify-center py-12 text-muted-foreground">
-                <p>Management for this content type coming soon...</p>
+        <Card className="border-border/50 shadow-lg">
+            <CardContent className="flex flex-col items-center justify-center py-20">
+                <div className="w-16 h-16 rounded-2xl bg-muted/50 border border-border flex items-center justify-center mb-4">
+                    <Settings size={28} className="text-muted-foreground/50" />
+                </div>
+                <h3 className="text-lg font-semibold mb-2">Coming Soon</h3>
+                <p className="text-sm text-muted-foreground">Management for this content type will be available in a future update.</p>
             </CardContent>
         </Card>
     );
 
+    const activeModel = CONTENT_MODELS.find(m => m.id === activeTab);
+    const ActiveIcon = activeModel?.icon || Settings;
+
     return (
-        <div className="min-h-screen bg-background text-foreground font-inter antialiased">
+        <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/[0.02]">
             {/* Header */}
-            <header className="sticky top-0 z-50 w-full border-b border-border/40 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-                <div className="container max-w-5xl mx-auto px-4 h-16 flex items-center justify-between">
-                    <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center shadow-lg shadow-primary/20">
-                            <span className="text-primary-foreground font-bold text-sm">A</span>
+            <header className="sticky top-0 z-50 w-full border-b border-border/50 bg-background/80 backdrop-blur-xl supports-[backdrop-filter]:bg-background/60">
+                <div className="container max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
+                    <div className="flex items-center gap-4">
+                        <div className="relative">
+                            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center shadow-lg shadow-primary/20">
+                                <Shield className="w-5 h-5 text-primary-foreground" />
+                            </div>
+                            <div className="absolute -top-0.5 -right-0.5 w-2.5 h-2.5 bg-green-500 rounded-full border-2 border-background" />
                         </div>
                         <div>
-                            <h1 className="text-lg font-semibold tracking-tight">Admin</h1>
-                            <p className="text-xs text-muted-foreground">Secure session active</p>
+                            <h1 className="text-lg font-bold tracking-tight">Admin Panel</h1>
+                            <p className="text-xs text-muted-foreground flex items-center gap-1">
+                                <span className="w-1.5 h-1.5 bg-green-500 rounded-full animate-pulse" />
+                                Secure session active
+                            </p>
                         </div>
                     </div>
-                    <Button variant="ghost" size="sm" onClick={handleLogout}>
-                        <LogOut className="mr-2 h-4 w-4" />
+                    <Button variant="ghost" size="sm" onClick={handleLogout} className="gap-2">
+                        <LogOut className="h-4 w-4" />
                         <span className="hidden sm:inline">Logout</span>
                     </Button>
                 </div>
             </header>
 
-            <main className="container max-w-5xl mx-auto px-4 py-8">
+            <main className="container max-w-6xl mx-auto px-4 py-8">
                 {error && (
-                    <div className="mb-6 p-4 bg-destructive/15 border border-destructive/50 rounded-lg text-destructive flex items-center justify-between animate-fade-in">
-                        <span className="text-sm font-medium">{error}</span>
-                        <Button variant="ghost" size="icon" onClick={() => setError(null)} className="h-6 w-6 text-destructive hover:bg-destructive/10">
-                            <X size={14} />
+                    <div className="mb-6 p-4 bg-destructive/10 border border-destructive/20 rounded-xl text-destructive flex items-center justify-between animate-slide-up-fade">
+                        <div className="flex items-center gap-3">
+                            <AlertTriangle size={18} />
+                            <span className="text-sm font-medium">{error}</span>
+                        </div>
+                        <Button variant="ghost" size="icon" onClick={() => setError(null)} className="h-8 w-8 text-destructive hover:bg-destructive/10">
+                            <X size={16} />
                         </Button>
                     </div>
                 )}
 
-                <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-8">
-                    {/* Simplified Tabs List */}
-                    <div className="border-b border-border/50 overflow-x-auto -mx-4 px-4 md:mx-0 md:px-0">
-                        <TabsList className="h-auto bg-transparent p-0 gap-0 w-full min-w-max md:min-w-0 grid grid-cols-6">
-                            {CONTENT_MODELS.map(model => (
-                                <TabsTrigger
-                                    key={model.id}
-                                    value={model.id}
-                                    className="px-3 py-3 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none whitespace-nowrap text-sm"
-                                >
-                                    {model.name}
-                                </TabsTrigger>
-                            ))}
+                <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
+                    {/* Modern Tabs */}
+                    <div className="bg-muted/30 border border-border/50 rounded-2xl p-1.5">
+                        <TabsList className="h-auto bg-transparent p-0 gap-1 w-full grid grid-cols-3 md:grid-cols-6">
+                            {CONTENT_MODELS.map(model => {
+                                const Icon = model.icon;
+                                return (
+                                    <TabsTrigger
+                                        key={model.id}
+                                        value={model.id}
+                                        className="px-3 py-2.5 rounded-xl data-[state=active]:bg-background data-[state=active]:shadow-sm data-[state=active]:text-primary whitespace-nowrap text-sm font-medium text-muted-foreground hover:text-foreground transition-all gap-2"
+                                    >
+                                        <Icon size={16} />
+                                        <span className="hidden md:inline">{model.name}</span>
+                                    </TabsTrigger>
+                                );
+                            })}
                         </TabsList>
                     </div>
 
-                    <div className="flex items-center justify-between pb-2 border-b border-border/50">
-                        <div>
-                            <h2 className="text-2xl font-bold tracking-tight">
-                                {CONTENT_MODELS.find(m => m.id === activeTab)?.name}
-                            </h2>
-                            <p className="text-muted-foreground mt-1">
-                                {CONTENT_MODELS.find(m => m.id === activeTab)?.description}
-                            </p>
+                    {/* Page Header */}
+                    <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-2">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 rounded-xl bg-primary/10 flex items-center justify-center">
+                                <ActiveIcon size={20} className="text-primary" />
+                            </div>
+                            <div>
+                                <h2 className="text-2xl font-bold tracking-tight">
+                                    {activeModel?.name}
+                                </h2>
+                                <p className="text-sm text-muted-foreground">
+                                    {activeModel?.description}
+                                </p>
+                            </div>
                         </div>
                         <div className="flex items-center gap-2">
                             <Button
@@ -642,25 +710,28 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
                                 size="icon"
                                 onClick={fetchEntries}
                                 disabled={loading}
+                                className="h-10 w-10"
                             >
                                 <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
                             </Button>
                             {activeTab === 'photo' && !isAdding && !editingId && (
-                                <Button onClick={startAdd}>
+                                <Button onClick={startAdd} className="shadow-lg shadow-primary/25">
                                     <Plus size={16} className="mr-2" />
-                                    Create Photo
+                                    <span className="hidden sm:inline">Add Photo</span>
                                 </Button>
                             )}
                         </div>
                     </div>
 
-                    {loading && activeTab !== 'index' && (
-                        <div className="flex items-center justify-center py-20">
-                            <Loader2 size={32} className="animate-spin text-primary" />
+                    {loading && activeTab !== 'index' ? (
+                        <div className="flex flex-col items-center justify-center py-20 space-y-4">
+                            <div className="relative">
+                                <div className="w-16 h-16 rounded-full border-4 border-primary/20" />
+                                <Loader2 size={32} className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-primary animate-spin" />
+                            </div>
+                            <p className="text-sm text-muted-foreground">Loading content...</p>
                         </div>
-                    )}
-
-                    {!loading && (
+                    ) : (
                         <div className="animate-fade-in">
                             <TabsContent value="index" className="mt-0">
                                 {renderIndexForm()}
@@ -672,16 +743,21 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
 
                             <TabsContent value="photo" className="mt-0 space-y-6">
                                 {(isAdding || editingId) && (
-                                    <Card>
-                                        <CardHeader>
-                                            <CardTitle>{isAdding ? 'Add New Photo' : 'Edit Photo'}</CardTitle>
+                                    <Card className="border-border/50 shadow-lg overflow-hidden">
+                                        <CardHeader className="border-b border-border/50 bg-muted/30">
+                                            <CardTitle className="flex items-center gap-2">
+                                                <div className="w-8 h-8 rounded-lg bg-primary/10 flex items-center justify-center">
+                                                    {isAdding ? <Plus size={18} className="text-primary" /> : <Edit2 size={18} className="text-primary" />}
+                                                </div>
+                                                {isAdding ? 'Add New Photo' : 'Edit Photo'}
+                                            </CardTitle>
                                         </CardHeader>
-                                        <CardContent>
+                                        <CardContent className="p-6 pt-6">
                                             {renderPhotoForm()}
                                         </CardContent>
-                                        <CardFooter className="flex gap-2 justify-end bg-muted/50 p-6">
+                                        <CardFooter className="flex gap-2 justify-end border-t border-border/50 bg-muted/30 p-4">
                                             <Button variant="outline" onClick={cancelEdit}>Cancel</Button>
-                                            <Button onClick={isAdding ? handleAdd : handleUpdate} disabled={saving} className="min-w-[100px]">
+                                            <Button onClick={isAdding ? handleAdd : handleUpdate} disabled={saving} className="shadow-lg shadow-primary/25">
                                                 {saving ? <Loader2 size={16} className="mr-2 animate-spin" /> : <Save size={16} className="mr-2" />}
                                                 {saving ? 'Saving...' : 'Save'}
                                             </Button>
@@ -691,24 +767,26 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
 
                                 {!isAdding && !editingId && (
                                     entries.length === 0 ? (
-                                        <div className="text-center py-20 bg-muted/30 rounded-lg border border-dashed flex flex-col items-center justify-center">
-                                            <ImageIcon size={48} className="text-muted-foreground mb-4 opacity-50" />
-                                            <h3 className="text-lg font-medium">No photos yet</h3>
-                                            <p className="text-sm text-muted-foreground mb-4">Start building your gallery.</p>
-                                            <Button onClick={startAdd}>
+                                        <div className="text-center py-20 bg-gradient-to-br from-muted/30 to-muted/10 rounded-2xl border border-dashed border-border/50 flex flex-col items-center justify-center">
+                                            <div className="w-20 h-20 rounded-2xl bg-muted/50 border border-border flex items-center justify-center mx-auto mb-4">
+                                                <ImageIcon size={32} className="text-muted-foreground/50" />
+                                            </div>
+                                            <h3 className="text-lg font-semibold mb-2">No photos yet</h3>
+                                            <p className="text-sm text-muted-foreground mb-6 max-w-sm">Start building your gallery with beautiful moments captured from your adventures.</p>
+                                            <Button onClick={startAdd} className="shadow-lg shadow-primary/25">
                                                 <Plus size={16} className="mr-2" />
                                                 Add First Photo
                                             </Button>
                                         </div>
                                     ) : (
-                                        <div className="space-y-2">
+                                        <div className="grid gap-3">
                                             {entries.map((entry) => (
                                                 <div
                                                     key={entry.id}
-                                                    className="flex items-center gap-4 p-3 bg-card/40 border border-border/40 rounded-lg hover:bg-accent/5 transition-colors group"
+                                                    className="group flex items-center gap-4 p-4 bg-card/50 backdrop-blur border border-border/50 rounded-xl hover:bg-accent/50 hover:border-primary/20 transition-all duration-200"
                                                 >
                                                     {/* Thumbnail */}
-                                                    <div className="h-10 w-10 shrink-0 overflow-hidden rounded border border-border/50 bg-muted relative">
+                                                    <div className="h-14 w-14 shrink-0 overflow-hidden rounded-xl border border-border/50 bg-muted/50 shadow-sm">
                                                         {entry.imageUrl ? (
                                                             <img
                                                                 src={entry.imageUrl}
@@ -718,25 +796,22 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
                                                             />
                                                         ) : (
                                                             <div className="h-full w-full flex items-center justify-center">
-                                                                <ImageIcon size={14} className="text-muted-foreground/50" />
+                                                                <ImageIcon size={20} className="text-muted-foreground/30" />
                                                             </div>
                                                         )}
                                                     </div>
 
                                                     {/* Info */}
-                                                    <div className="flex-1 min-w-0 grid gap-0.5">
-                                                        <div className="flex items-center gap-2">
-                                                            <h4 className="font-medium text-sm truncate text-foreground/90">{entry.title}</h4>
-                                                            <span className={`px-1.5 py-0.5 text-[10px] uppercase font-bold tracking-wider rounded border ${entry.isPublished
-                                                                ? 'bg-green-500/5 text-green-500 border-green-500/20'
-                                                                : 'bg-yellow-500/5 text-yellow-500 border-yellow-500/20'
-                                                                }`}>
+                                                    <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-2 mb-1">
+                                                            <h4 className="font-medium text-base truncate">{entry.title}</h4>
+                                                            <Badge variant={entry.isPublished ? "default" : "secondary"} className={`text-[10px] px-2 py-0.5 ${entry.isPublished ? 'bg-primary/10 text-primary border-primary/20' : ''}`}>
                                                                 {entry.isPublished ? 'Published' : 'Draft'}
-                                                            </span>
+                                                            </Badge>
                                                         </div>
-                                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                        <div className="flex items-center gap-2 text-sm text-muted-foreground">
                                                             {entry.subtitle ? (
-                                                                <span className="truncate max-w-[200px]">{entry.subtitle}</span>
+                                                                <span className="truncate">{entry.subtitle}</span>
                                                             ) : (
                                                                 <span className="italic opacity-50">No location</span>
                                                             )}
@@ -745,11 +820,11 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
 
                                                     {/* Actions */}
                                                     <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground hover:text-foreground" onClick={() => startEdit(entry)}>
-                                                            <Edit2 size={14} />
+                                                        <Button variant="ghost" size="icon" className="h-9 w-9" onClick={() => startEdit(entry)}>
+                                                            <Edit2 size={16} />
                                                         </Button>
-                                                        <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:bg-destructive/10" onClick={() => handleDelete(entry.id)}>
-                                                            <Trash2 size={14} />
+                                                        <Button variant="ghost" size="icon" className="h-9 w-9 text-destructive hover:text-destructive" onClick={() => handleDelete(entry.id)}>
+                                                            <Trash2 size={16} />
                                                         </Button>
                                                     </div>
                                                 </div>
@@ -771,46 +846,47 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
 
             {/* Token Input Modal */}
             {showTokenModal && (
-                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-black/80 backdrop-blur-md">
-                    <div className="bg-zinc-900 border border-zinc-700 rounded-xl p-6 w-full max-w-sm mx-4 animate-in zoom-in-95 duration-200">
-                        <div className="flex items-center justify-between mb-4">
-                            <div className="flex items-center gap-3">
-                                <div className="p-2 bg-accent/20 rounded-lg">
-                                    <Key size={20} className="text-accent" />
+                <div className="fixed inset-0 z-[200] flex items-center justify-center bg-background/80 backdrop-blur-sm">
+                    <Card className="w-full max-w-md mx-4 animate-scale-in border-border/50 shadow-2xl">
+                        <CardHeader className="text-center pb-4">
+                            <div className="w-16 h-16 rounded-2xl bg-gradient-to-br from-primary to-primary/70 flex items-center justify-center mx-auto mb-4 shadow-lg shadow-primary/25">
+                                <Key size={28} className="text-primary-foreground" />
+                            </div>
+                            <CardTitle className="text-xl">API Access Required</CardTitle>
+                            <CardDescription>
+                                Connect to Contentful to manage your content
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <p className="text-sm text-muted-foreground mb-6 text-center">
+                                This admin panel requires your Contentful Management Token (CMA). Your token is stored securely in your browser.
+                            </p>
+
+                            <form onSubmit={handleTokenSubmit} className="space-y-4">
+                                <div className="space-y-2">
+                                    <Label htmlFor="token" className="text-sm font-medium">Management Token (CMA)</Label>
+                                    <Input
+                                        id="token"
+                                        type="password"
+                                        value={tokenInput}
+                                        onChange={(e) => setTokenInput(e.target.value)}
+                                        placeholder="CFPAT-..."
+                                        autoFocus
+                                        className="h-11 bg-muted/50 border-muted focus:border-primary/50"
+                                    />
+                                    <p className="text-xs text-muted-foreground">
+                                        <a href="https://app.contentful.com/deeplink?link=api-keys" target="_blank" rel="noopener noreferrer" className="underline hover:text-primary transition-colors">
+                                            Get your token here →
+                                        </a>
+                                    </p>
                                 </div>
-                                <h3 className="text-lg font-semibold">
-                                    Setup API Access
-                                </h3>
-                            </div>
-                        </div>
 
-                        <p className="text-sm text-muted-foreground mb-4">
-                            This static site requires your Contentful Management Token (CMA) to manage content. It will be stored securely in your browser.
-                        </p>
-
-                        <form onSubmit={handleTokenSubmit}>
-                            <div className="space-y-3 mb-4">
-                                <Label>Management Token (CMA)</Label>
-                                <Input
-                                    type="password"
-                                    value={tokenInput}
-                                    onChange={(e) => setTokenInput(e.target.value)}
-                                    placeholder="CFPAT-..."
-                                    className="bg-zinc-800 border-zinc-700"
-                                    autoFocus
-                                />
-                                <p className="text-xs text-zinc-500">
-                                    <a href="https://app.contentful.com/deeplink?link=api-keys" target="_blank" rel="noopener noreferrer" className="underline hover:text-accent">
-                                        Get your token here
-                                    </a>
-                                </p>
-                            </div>
-
-                            <Button type="submit" className="w-full">
-                                Save & Connect
-                            </Button>
-                        </form>
-                    </div>
+                                <Button type="submit" className="w-full h-11 shadow-lg shadow-primary/25">
+                                    Connect & Save
+                                </Button>
+                            </form>
+                        </CardContent>
+                    </Card>
                 </div>
             )}
         </div>

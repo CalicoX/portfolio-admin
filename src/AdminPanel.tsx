@@ -14,10 +14,6 @@ import {
   Key,
   X,
   Settings,
-  LayoutDashboard,
-  Command,
-  Sparkles,
-  BarChart3,
 } from 'lucide-react';
 import {
   getPhotosAdmin,
@@ -34,6 +30,8 @@ import {
   validateAuthToken,
   getStoredAuthToken,
   clearAuthToken,
+  updateLastActivity,
+  isInactiveSession,
 } from '../lib/adminAuth';
 import { generateSetupUri } from '../lib/totp';
 
@@ -46,6 +44,7 @@ import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle }
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
+import { DatePicker } from "@/components/ui/date-picker";
 import {
   SidebarInset,
   SidebarProvider,
@@ -54,7 +53,6 @@ import {
 // Admin Components
 import { AdminSidebar } from "@/components/admin-sidebar";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { Separator } from "@/components/ui/separator";
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -161,6 +159,41 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
     window.addEventListener('hashchange', handleHashChange);
     return () => window.removeEventListener('hashchange', handleHashChange);
   }, []);
+
+  // Inactivity timeout - auto logout after 30 minutes of no activity
+  useEffect(() => {
+    // Initialize activity timestamp on mount
+    updateLastActivity();
+
+    // Events that count as user activity
+    const activityEvents = [
+      'mousedown', 'mousemove', 'keypress', 'scroll', 'touchstart', 'click'
+    ];
+
+    const handleActivity = () => {
+      updateLastActivity();
+    };
+
+    // Add activity listeners
+    activityEvents.forEach(event => {
+      window.addEventListener(event, handleActivity, { passive: true });
+    });
+
+    // Check inactivity every minute
+    const inactivityCheck = setInterval(() => {
+      if (isInactiveSession()) {
+        clearAuthToken();
+        onLogout();
+      }
+    }, 60 * 1000); // Check every minute
+
+    return () => {
+      activityEvents.forEach(event => {
+        window.removeEventListener(event, handleActivity);
+      });
+      clearInterval(inactivityCheck);
+    };
+  }, [onLogout]);
 
   const fetchEntries = async () => {
     try {
@@ -542,10 +575,10 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
                 </div>
                 <div className="space-y-2">
                   <Label>Date</Label>
-                  <Input
-                    type="date"
+                  <DatePicker
                     value={formData.date || ''}
-                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                    onChange={(value) => setFormData({ ...formData, date: value })}
+                    placeholder="Select date"
                   />
                 </div>
                 <div className="space-y-2">
@@ -734,8 +767,8 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
   return (
     <SidebarProvider defaultOpen={true}>
       <AdminSidebar onLogout={handleLogout} avatar={indexData?.profileImageUrl || ''} />
-      <SidebarInset className="h-[calc(100vh-0px)] overflow-hidden">
-        <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b transition-all duration-200 ease-in-out sticky top-0 z-[5] bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
+      <SidebarInset>
+        <header className="flex h-16 shrink-0 items-center justify-between gap-2 border-b transition-all duration-200 ease-in-out sticky top-0 z-[5] bg-background/80 backdrop-blur-md supports-[backdrop-filter]:bg-background/60">
           <div className="flex items-center gap-2 px-4">
             <SidebarTrigger className="-ml-1" />
             <Breadcrumb>
@@ -763,7 +796,7 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
             </Breadcrumb>
           </div>
         </header>
-        <div className="flex flex-1 flex-col gap-4 p-4 pt-6">
+        <div className="flex flex-1 flex-col gap-4 p-4 pt-6 min-h-0">
           {/* Page Header */}
           <div className="flex items-center gap-4">
             <div className="flex-1">
@@ -785,8 +818,6 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
               )}
             </div>
           </div>
-
-          <Separator />
 
           {/* Error Alert */}
           {error && (

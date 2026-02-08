@@ -1,4 +1,5 @@
 import { createClient } from 'contentful-management';
+import { fetchWithMgmtCache, invalidateMgmtCache } from './contentfulManagementCache';
 
 const TOKEN_STORAGE_KEY = 'contentful_cma_token';
 
@@ -81,6 +82,10 @@ export const createPhoto = async (data: PhotoInput) => {
 
     // Publish the entry
     await entry.publish();
+
+    // 清除相关缓存
+    invalidateMgmtCache('photo');
+
     return entry;
 };
 
@@ -115,6 +120,11 @@ export const updatePhoto = async (entryId: string, data: Partial<PhotoInput>) =>
 
     const updatedEntry = await entry.update();
     await updatedEntry.publish();
+
+    // 清除相关缓存
+    invalidateMgmtCache('photo');
+    invalidateMgmtCache('photo', entryId);
+
     return updatedEntry;
 };
 
@@ -131,6 +141,10 @@ export const deletePhoto = async (entryId: string) => {
     }
 
     await entry.delete();
+
+    // 清除相关缓存
+    invalidateMgmtCache('photo');
+    invalidateMgmtCache('photo', entryId);
 };
 
 // Upload an image asset
@@ -159,44 +173,50 @@ export const uploadAsset = async (file: File): Promise<string> => {
 };
 
 // Get all photos (using Management API for admin)
-export const getPhotosAdmin = async () => {
-    const environment = await getEnvironment();
-    const entries = await environment.getEntries({
-        content_type: 'photo',
-    });
+export const getPhotosAdmin = async (options?: { skipCache?: boolean }) => {
+    return fetchWithMgmtCache(
+        async () => {
+            const environment = await getEnvironment();
+            const entries = await environment.getEntries({
+                content_type: 'photo',
+            });
 
-    // Get all asset IDs
-    const assetIds = entries.items
-        .map((item: any) => item.fields.image?.['en-US']?.sys?.id)
-        .filter(Boolean);
+            // Get all asset IDs
+            const assetIds = entries.items
+                .map((item: any) => item.fields.image?.['en-US']?.sys?.id)
+                .filter(Boolean);
 
-    // Fetch assets to get URLs
-    const assetMap = new Map<string, string>();
-    if (assetIds.length > 0) {
-        const assets = await environment.getAssets({
-            'sys.id[in]': assetIds.join(','),
-        });
-        assets.items.forEach((asset: any) => {
-            const url = asset.fields.file?.['en-US']?.url;
-            if (url) {
-                assetMap.set(asset.sys.id, `https:${url}`);
+            // Fetch assets to get URLs
+            const assetMap = new Map<string, string>();
+            if (assetIds.length > 0) {
+                const assets = await environment.getAssets({
+                    'sys.id[in]': assetIds.join(','),
+                });
+                assets.items.forEach((asset: any) => {
+                    const url = asset.fields.file?.['en-US']?.url;
+                    if (url) {
+                        assetMap.set(asset.sys.id, `https:${url}`);
+                    }
+                });
             }
-        });
-    }
 
-    return entries.items.map((item: any) => {
-        const assetId = item.fields.image?.['en-US']?.sys?.id;
-        return {
-            id: item.sys.id,
-            title: item.fields.title?.['en-US'] || '',
-            location: item.fields.location?.['en-US'] || '',
-            date: item.fields.date?.['en-US'] || '',
-            aspectRatio: item.fields.aspectRatio?.['en-US'] || 'aspect-[3/4]',
-            imageAssetId: assetId || null,
-            imageUrl: assetId ? assetMap.get(assetId) || null : null,
-            isPublished: item.sys.publishedVersion !== undefined,
-        };
-    });
+            return entries.items.map((item: any) => {
+                const assetId = item.fields.image?.['en-US']?.sys?.id;
+                return {
+                    id: item.sys.id,
+                    title: item.fields.title?.['en-US'] || '',
+                    location: item.fields.location?.['en-US'] || '',
+                    date: item.fields.date?.['en-US'] || '',
+                    aspectRatio: item.fields.aspectRatio?.['en-US'] || 'aspect-[3/4]',
+                    imageAssetId: assetId || null,
+                    imageUrl: assetId ? assetMap.get(assetId) || null : null,
+                    isPublished: item.sys.publishedVersion !== undefined,
+                };
+            });
+        },
+        'photo',
+        { skipCache: options?.skipCache }
+    );
 };
 
 // ============ INDEX (Site Profile) CRUD ============
@@ -211,45 +231,51 @@ export interface IndexInput {
 }
 
 // Get Index/Site Profile entry
-export const getIndexAdmin = async () => {
-    const environment = await getEnvironment();
-    const entries = await environment.getEntries({
-        content_type: 'index',
-        limit: 1,
-    });
+export const getIndexAdmin = async (options?: { skipCache?: boolean }) => {
+    return fetchWithMgmtCache(
+        async () => {
+            const environment = await getEnvironment();
+            const entries = await environment.getEntries({
+                content_type: 'index',
+                limit: 1,
+            });
 
-    if (entries.items.length === 0) {
-        return null;
-    }
-
-    const item = entries.items[0] as any;
-    const assetId = item.fields.profileImage?.['en-US']?.sys?.id;
-
-    // Get profile image URL
-    let imageUrl = null;
-    if (assetId) {
-        try {
-            const asset = await environment.getAsset(assetId);
-            const url = asset.fields.file?.['en-US']?.url;
-            if (url) {
-                imageUrl = `https:${url}`;
+            if (entries.items.length === 0) {
+                return null;
             }
-        } catch (e) {
-            // Asset not found
-        }
-    }
 
-    return {
-        id: item.sys.id,
-        heroTitle: item.fields.heroTitle?.['en-US'] || '',
-        heroSubtitle: item.fields.heroSubtitle?.['en-US'] || '',
-        name: item.fields.name?.['en-US'] || '',
-        description: item.fields.description?.['en-US'] || '',
-        cvLink: item.fields.cvLink?.['en-US'] || '',
-        profileImageAssetId: assetId || null,
-        profileImageUrl: imageUrl,
-        isPublished: item.sys.publishedVersion !== undefined,
-    };
+            const item = entries.items[0] as any;
+            const assetId = item.fields.profileImage?.['en-US']?.sys?.id;
+
+            // Get profile image URL
+            let imageUrl = null;
+            if (assetId) {
+                try {
+                    const asset = await environment.getAsset(assetId);
+                    const url = asset.fields.file?.['en-US']?.url;
+                    if (url) {
+                        imageUrl = `https:${url}`;
+                    }
+                } catch (e) {
+                    // Asset not found
+                }
+            }
+
+            return {
+                id: item.sys.id,
+                heroTitle: item.fields.heroTitle?.['en-US'] || '',
+                heroSubtitle: item.fields.heroSubtitle?.['en-US'] || '',
+                name: item.fields.name?.['en-US'] || '',
+                description: item.fields.description?.['en-US'] || '',
+                cvLink: item.fields.cvLink?.['en-US'] || '',
+                profileImageAssetId: assetId || null,
+                profileImageUrl: imageUrl,
+                isPublished: item.sys.publishedVersion !== undefined,
+            };
+        },
+        'index',
+        { skipCache: options?.skipCache }
+    );
 };
 
 // Update Index entry
@@ -286,5 +312,9 @@ export const updateIndex = async (entryId: string, data: Partial<IndexInput>) =>
 
     const updatedEntry = await entry.update();
     await updatedEntry.publish();
+
+    // 清除相关缓存
+    invalidateMgmtCache('index');
+
     return updatedEntry;
 };

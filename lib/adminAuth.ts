@@ -106,3 +106,27 @@ export function hasAuthToken(): boolean {
     const maxAge = 15 * 60 * 1000;
     return Date.now() - timestamp <= maxAge;
 }
+
+// Activity tracking for auto-logout
+const ACTIVITY_KEY = '_as_a';
+const INACTIVITY_TIMEOUT = 30 * 60 * 1000; // 30 minutes
+
+export function updateLastActivity(): void {
+    try {
+        localStorage.setItem(ACTIVITY_KEY, Date.now().toString());
+    } catch {
+        // Ignore
+    }
+}
+
+export function isInactiveSession(): boolean {
+    try {
+        const lastActivity = localStorage.getItem(ACTIVITY_KEY);
+        if (!lastActivity) return false;
+
+        const elapsed = Date.now() - parseInt(lastActivity, 10);
+        return elapsed > INACTIVITY_TIMEOUT;
+    } catch {
+        return false;
+    }
+}

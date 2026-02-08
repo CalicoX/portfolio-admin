@@ -124,7 +124,16 @@ export const generateTotpSecret = (): string => {
 };
 
 export const isTotpEnabled = (): boolean => {
-    return !!getTotpSecret();
+    const secret = getTotpSecret();
+    if (!secret) return false;
+
+    // 检查是否通过环境变量明确禁用 2FA
+    const enabled = import.meta.env.VITE_ENABLE_TOTP;
+    if (enabled === 'false' || enabled === '0') {
+        return false;
+    }
+
+    return true;
 };
 
 // Generate otpauth URI

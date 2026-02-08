@@ -52,6 +52,7 @@ import {
 
 // Admin Components
 import { AdminSidebar } from "@/components/admin-sidebar";
+import { SkeletonGrid, SkeletonIndex } from "@/components/SkeletonCard";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import {
   Breadcrumb,
@@ -417,13 +418,21 @@ const AdminPanel: React.FC<AdminPanelProps> = ({ onLogout }) => {
 
   // Render content based on active tab
   const renderContent = () => {
-    if (loading && activeTab !== 'index') {
-      return (
-        <div className="flex flex-col items-center justify-center py-20 space-y-4">
-          <Loader2 size={32} className="text-primary animate-spin" />
-          <p className="text-sm text-muted-foreground">Loading content...</p>
-        </div>
-      );
+    // 使用骨架屏而不是简单的 loading spinner
+    if (loading) {
+      switch (activeTab) {
+        case 'index':
+          return <SkeletonIndex />;
+        case 'photo':
+          return <SkeletonGrid count={8} />;
+        default:
+          return (
+            <div className="flex flex-col items-center justify-center py-20 space-y-4">
+              <Loader2 size={32} className="text-primary animate-spin" />
+              <p className="text-sm text-muted-foreground">Loading content...</p>
+            </div>
+          );
+      }
     }
 
     switch (activeTab) {

@@ -75,12 +75,15 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
   };
 
   return (
-    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10">
+    <div className="flex min-h-svh w-full items-center justify-center p-6 md:p-10 border-grid">
       <div className="w-full max-w-sm">
         <div className="flex flex-col gap-6">
           {/* Logo/Brand */}
           <div className="flex flex-col gap-2 text-center">
-            <h1 className="text-2xl font-bold">Admin Panel</h1>
+            <div className="w-10 h-10 rounded-md bg-foreground/10 flex items-center justify-center mx-auto mb-2 border border-border">
+              <Lock className="w-5 h-5 text-foreground" />
+            </div>
+            <h1 className="text-xl font-semibold tracking-tight">Admin Panel</h1>
             <p className="text-sm text-muted-foreground">
               {showTotpInput
                 ? 'Enter your two-factor authentication code'
@@ -148,22 +151,10 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onLoginSuccess }) => {
             </Button>
           </form>
 
-          {/* Divider */}
-          <div className="relative">
-            <div className="absolute inset-0 flex items-center">
-              <span className="w-full border-t" />
-            </div>
-            <div className="relative flex justify-center text-xs uppercase">
-              <span className="bg-background px-2 text-muted-foreground">
-                Secure
-              </span>
-            </div>
-          </div>
-
           {/* Footer */}
-          <div className="flex items-center justify-center gap-2 text-xs text-muted-foreground">
+          <div className="flex items-center justify-center gap-1.5 text-xs text-muted-foreground pt-2">
             <Lock className="size-3" />
-            <span>Powered by Contentful</span>
+            <span>Secure access</span>
           </div>
         </div>
       </div>
